@@ -19,7 +19,7 @@ class Model:
     """
     Store the current state of the game, like the player list, player inputs, etc.
     """
-    _users: dict[str, User] = {}   # Current Users, indexed by the corresponding sid
+    _users: dict[str, User] = {}  # Current Users, indexed by the corresponding sid
 
     @property
     def users(self):

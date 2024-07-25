@@ -1,7 +1,7 @@
-from flask import Flask, request
-from flask_socketio import SocketIO, emit
+from flask import request
+from flask_socketio import emit
 from model import Model
-from buzzer import initialize_buzzers
+from server import Server
 
 QUESTIONS = [
     {
@@ -26,39 +26,33 @@ QUESTIONS = [
 
 
 def main():
-    app = Flask(__name__, "/")
-    socket = SocketIO(app)
-    model = Model()
+    app = Server(__name__, "/")
     currentQuestion = -1
 
-    @app.route("/")
-    def root():
-        return app.redirect("index.html")
-
-    @socket.on("login")
+    @app.socket.on("login")
     def register_user(data):
-        model.register_user(request.sid, data)
-        emit("users", model.users_json, broadcast=True)
+        app.model.register_user(request.sid, data)
+        emit("users", app.model.users_json, broadcast=True)
 
-    @socket.on("disconnect")
+    @app.socket.on("disconnect")
     def remove_user():
-        model.unregister_user(request.sid)
-        emit("users", model.users, broadcast=True)
+        app.model.unregister_user(request.sid)
+        emit("users", app.model.users, broadcast=True)
 
-    @socket.on("answer")
-    def store_anwer(data):
-        model.set_answer(request.sid, data)
+    @app.socket.on("answer")
+    def store_answer(data):
+        app.model.set_answer(request.sid, data)
 
-    @socket.on("revealAnswers")
+    @app.socket.on("revealAnswers")
     def reveal_answers():
-        emit("answers", model.get_broadcast_data("answer"), broadcast=True)
+        emit("answers", app.model.get_broadcast_data("answer"), broadcast=True)
 
-    @socket.on("showSolution")
+    @app.socket.on("showSolution")
     def show_answer():
         print(f"Showing Solution")
         emit("solution", QUESTIONS[currentQuestion]["solution"], broadcast=True)
 
-    @socket.on("nextQuestion")
+    @app.socket.on("nextQuestion")
     def next_question():
         nonlocal currentQuestion
         currentQuestion += 1
@@ -68,10 +62,7 @@ def main():
         del data["solution"]
         emit("question", QUESTIONS[currentQuestion], broadcast=True)
 
-    # Initialize Buzzers
-    initialize_buzzers(socket, model)
-
-    socket.run(app, "localhost", allow_unsafe_werkzeug=True)
+    app.start_server("localhost", allow_unsafe_werkzeug=True)
 
 
 if __name__ == "__main__":
