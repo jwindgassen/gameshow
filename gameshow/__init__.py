@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_socketio import SocketIO, emit
-
+from model import Model
+from buzzer import initialize_buzzers
 
 QUESTIONS = [
     {
@@ -27,8 +28,7 @@ QUESTIONS = [
 def main():
     app = Flask(__name__, "/")
     socket = SocketIO(app)
-    users = {}
-    answers = {}
+    model = Model()
     currentQuestion = -1
 
     @app.route("/")
@@ -37,42 +37,21 @@ def main():
 
     @socket.on("login")
     def register_user(data):
-        nonlocal users
-
-        users[request.sid] = data
-        emit("users", list(users.values()), broadcast=True)
+        model.register_user(request.sid, data)
+        emit("users", model.users_json, broadcast=True)
 
     @socket.on("disconnect")
     def remove_user():
-        nonlocal users
-
-        if request.sid in users:
-            del users[request.sid]
-
-    @socket.on("buzzer")
-    def buzzer():
-        print(f"Buzzer from {request.sid}")
-        data = [{"name": value["name"], "value": key == request.sid} for key, value in users.items()]
-        emit("buzzers", data, broadcast=True)
-
-    @socket.on("clearBuzzers")
-    def clear_buzzers():
-        print("Clearing buzzers")
-        data = [{"name": value["name"], "value": False} for value in users.values()]
-        emit("buzzers", data, broadcast=True)
+        model.unregister_user(request.sid)
+        emit("users", model.users, broadcast=True)
 
     @socket.on("answer")
     def store_anwer(data):
-        nonlocal answers
-
-        print(f"Received Answer from {request.sid}")
-        answers[request.sid] = data
+        model.set_answer(request.sid, data)
 
     @socket.on("revealAnswers")
     def reveal_answers():
-        print(f"Revealing Answers")
-        data = [{"name": value["name"], "value": answers[key]} for key, value in users.items()]
-        emit("answers", data, broadcast=True)
+        emit("answers", model.get_broadcast_data("answer"), broadcast=True)
 
     @socket.on("showSolution")
     def show_answer():
@@ -89,6 +68,8 @@ def main():
         del data["solution"]
         emit("question", QUESTIONS[currentQuestion], broadcast=True)
 
+    # Initialize Buzzers
+    initialize_buzzers(socket, model)
 
     socket.run(app, "localhost", allow_unsafe_werkzeug=True)
 
