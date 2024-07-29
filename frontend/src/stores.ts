@@ -41,21 +41,29 @@ export const userStore = reactive({
 });
 
 type Question = {
-  type: 'buzzer' | 'input' | 'multipleChoice';
   number: number;
-  text: string;
-  solution?: string;
+  question: {
+    type: 'text';
+    text: string;
+  };
+  input: {
+    type: 'buzzer' | 'textInput';
+  };
+  solution?: {
+    type: 'text';
+    text: string;
+  };
 };
 
 export const questionStore = reactive({
-  question: null as Question | null,
+  question: undefined as Question | undefined,
 
   updateQuestion(question: Question) {
     questionStore.question = question;
     questionStore.question.solution = undefined;
   },
 
-  updateSolution(solution: string) {
+  updateSolution(solution: { type: 'text'; text: string }) {
     if (questionStore.question) questionStore.question.solution = solution;
   },
 });

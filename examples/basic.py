@@ -1,22 +1,21 @@
-from gameshow import GameShow
-from gameshow.questions import MultipleChoiceQuestion as MCQ, GuesstimationQuestion as GQ, InputQuestion as IQ
-
-
-modules = ["buzzers"]
-
-MCQ.options = {
-    "timeout": 30,
-    "randomize_order": True,
-    "input_method": "buzzer",
-}
+from gameshow import *
 
 questions = [
-    MCQ("What's 1+1?", ["1", "2", "3", "4"], "2"),
-    MCQ("What did Einstein earn the Nobel Price for?", ["General Relativity", "Special Relativity", "The Photoelectric Effect"], 2),
-    IQ("Name 3 Video Games for the PlayStation 1", 3),
-    GQ("How many different people have served as US President", 45)
+    Question(
+        TextQuestion("What is the Answer to the Ultimate Question of Life, the Universe, and Everything else"),
+        BuzzerInput(),
+        TextSolution("42")
+    ),
+    Question(
+        TextQuestion("What is the Airspeed velocity of an unladen Swallow"),
+        BuzzerInput(),
+        TextSolution("An African or European one?")
+    ),
+    Question(
+        TextQuestion("What's the 11th Letter of the Greek Alphabet"),
+        TextInput(),
+        TextSolution("λ (lambda)")
+    )
 ]
 
-
-gameshow = GameShow(questions, modules=modules)
-gameshow.start()
+run_gameshow(questions)

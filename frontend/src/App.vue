@@ -18,8 +18,8 @@ const showPlayers = ref(false);
     </v-app-bar>
 
     <v-main>
-      <BuzzerQuestion v-if="questionStore.question?.type === 'buzzer'" />
-      <InputQuestion v-else-if="questionStore.question?.type === 'input'" />
+      <BuzzerQuestion v-if="questionStore.question?.input.type === 'buzzer'" />
+      <InputQuestion v-else-if="questionStore.question?.input.type === 'textInput'" />
     </v-main>
 
     <v-navigation-drawer v-model="showPlayers" location="right" :width="300">

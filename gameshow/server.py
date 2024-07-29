@@ -1,7 +1,7 @@
 from flask import Flask, redirect
 from flask_socketio import SocketIO
-from model import Model
-from buzzer import initialize_buzzers
+from .model import Model
+from .buzzer import initialize_buzzers
 
 
 class Server(Flask):
